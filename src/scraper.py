@@ -12,17 +12,21 @@ HEADERS = {
     )
 }
 
-# (company display name, search keywords) pairs
+# Broad role-based search queries — any company can appear in results
 SEARCH_QUERIES = [
-    ("RBC", "finance internship co-op analyst"),
-    ("TD Bank", "finance internship co-op analyst"),
-    ("BMO", "finance internship co-op analyst"),
-    ("CIBC", "finance internship co-op analyst"),
-    ("Scotiabank", "finance internship co-op analyst"),
-    ("Deloitte", "consulting finance internship analyst"),
-    ("KPMG", "consulting finance internship"),
-    ("EY", "consulting finance internship analyst"),
-    ("PwC", "consulting finance internship"),
+    "investment banking internship co-op",
+    "capital markets internship co-op",
+    "equity research internship co-op",
+    "asset management internship co-op",
+    "wealth management internship co-op",
+    "mergers acquisitions internship co-op",
+    "strategy consulting internship co-op",
+    "management consulting internship co-op",
+    "financial analyst internship co-op",
+    "corporate finance internship co-op",
+    "fp&a internship co-op",
+    "financial planning analysis internship",
+    "business analyst finance internship co-op",
 ]
 
 LOCATIONS = ["Vancouver, BC", "Toronto, ON", "Hong Kong"]
@@ -38,14 +42,14 @@ class JobPosting:
     description: str = ""
 
 
-def scrape_indeed(company: str, keywords: str, location: str) -> list:
+def scrape_indeed(query: str, location: str) -> list:
     """
-    Scrape ca.indeed.com for jobs matching company+keywords at location.
+    Scrape ca.indeed.com for jobs matching the search query at location.
     Returns list of JobPosting. Never raises — returns [] on any error.
     """
     jobs = []
     params = {
-        "q": f"{company} {keywords}",
+        "q": query,
         "l": location,
         "sort": "date",
         "fromage": "1",  # Only jobs posted in last 1 day
@@ -75,7 +79,7 @@ def scrape_indeed(company: str, keywords: str, location: str) -> list:
 
             jobs.append(JobPosting(
                 title=title_el.get_text(strip=True),
-                company=company_el.get_text(strip=True) if company_el else company,
+                company=company_el.get_text(strip=True) if company_el else "",
                 location=location_el.get_text(strip=True) if location_el else location,
                 url=job_url,
             ))
@@ -83,16 +87,16 @@ def scrape_indeed(company: str, keywords: str, location: str) -> list:
         time.sleep(1)  # Polite delay between requests
 
     except Exception as e:
-        print(f"[scraper] Error scraping Indeed for {company} in {location}: {e}")
+        print(f"[scraper] Error scraping Indeed for '{query}' in {location}: {e}")
 
     return jobs
 
 
 def scrape_all() -> list:
-    """Scrape all company+location combinations. Returns combined list of JobPosting."""
+    """Scrape all query+location combinations. Returns combined list of JobPosting."""
     all_jobs = []
-    for company, keywords in SEARCH_QUERIES:
+    for query in SEARCH_QUERIES:
         for location in LOCATIONS:
-            jobs = scrape_indeed(company, keywords, location)
+            jobs = scrape_indeed(query, location)
             all_jobs.extend(jobs)
     return all_jobs

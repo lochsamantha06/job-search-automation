@@ -28,7 +28,7 @@ def test_scrape_indeed_returns_job_postings():
         body=MOCK_HTML,
         status=200,
     )
-    jobs = scrape_indeed("Scotiabank", "finance internship", "Toronto, ON")
+    jobs = scrape_indeed("investment banking internship co-op", "Toronto, ON")
     assert len(jobs) == 2
     assert isinstance(jobs[0], JobPosting)
     assert jobs[0].title == "Investment Banking Analyst Intern"
@@ -43,7 +43,7 @@ def test_scrape_indeed_returns_empty_on_http_error():
         "https://ca.indeed.com/jobs",
         status=403,
     )
-    jobs = scrape_indeed("RBC", "finance internship", "Vancouver, BC")
+    jobs = scrape_indeed("financial analyst internship co-op", "Vancouver, BC")
     assert jobs == []
 
 
@@ -54,7 +54,7 @@ def test_scrape_indeed_returns_empty_on_network_error():
         "https://ca.indeed.com/jobs",
         body=Exception("Connection refused"),
     )
-    jobs = scrape_indeed("BMO", "finance", "Toronto, ON")
+    jobs = scrape_indeed("corporate finance internship co-op", "Toronto, ON")
     assert jobs == []
 
 
@@ -69,7 +69,7 @@ def test_scrape_indeed_skips_cards_without_title():
     </body></html>
     """
     responses_lib.add(responses_lib.GET, "https://ca.indeed.com/jobs", body=html, status=200)
-    jobs = scrape_indeed("CIBC", "finance", "Toronto, ON")
+    jobs = scrape_indeed("finance internship co-op", "Toronto, ON")
     # No jobTitle element — should be skipped
     assert jobs == []
 
@@ -97,6 +97,6 @@ def test_job_posting_url_is_absolute():
         body=MOCK_HTML,
         status=200,
     )
-    jobs = scrape_indeed("Scotiabank", "finance internship", "Toronto, ON")
+    jobs = scrape_indeed("investment banking internship co-op", "Toronto, ON")
     for job in jobs:
         assert job.url.startswith("https://")
