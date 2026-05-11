@@ -1,0 +1,10 @@
+requests==2.31.0
+beautifulsoup4==4.12.3
+gspread==6.1.2
+google-auth==2.29.0
+twilio==9.0.4
+anthropic==0.25.0
+pytest==8.1.2
+pytest-mock==3.14.0
+responses==0.25.3
+python-dotenv==1.0.1
