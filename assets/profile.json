@@ -1,0 +1,27 @@
+{
+  "first_name": "Samantha",
+  "last_name": "Lo",
+  "full_name": "Samantha Lo",
+  "email": "lochsamantha06@gmail.com",
+  "phone": "+1XXXXXXXXXX",
+  "linkedin": "https://linkedin.com/in/samanthalo",
+  "address_line1": "",
+  "city": "Vancouver",
+  "province": "BC",
+  "postal_code": "",
+  "country": "Canada",
+  "education": {
+    "school": "University of British Columbia",
+    "faculty": "Sauder School of Business",
+    "degree": "Bachelor of Commerce",
+    "major": "Finance",
+    "gpa": "4.0 / 4.0",
+    "start_year": "2022",
+    "graduation_year": "2028"
+  },
+  "work_experience": [],
+  "skills": ["Financial Modelling", "DCF Valuation", "Bloomberg Terminal", "Microsoft Excel", "Python", "PowerPoint"],
+  "languages": ["English (Fluent)", "Cantonese (Native)"],
+  "resume_path": "assets/resume.pdf",
+  "cover_letter": "I am a second-year BCom Finance student at UBC Sauder with a 4.0 GPA, passionate about capital markets and financial analysis. I am fluent in English and Cantonese and have strong skills in financial modelling and DCF valuation."
+}

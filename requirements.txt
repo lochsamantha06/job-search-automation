@@ -8,3 +8,7 @@ pytest==8.1.2
 pytest-mock==3.14.0
 responses==0.25.3
 python-dotenv==1.0.1
+playwright==1.44.0
+google-api-python-client==2.126.0
+google-auth-oauthlib==1.2.0
+pillow==10.3.0
