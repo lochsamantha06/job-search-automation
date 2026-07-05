@@ -1,0 +1,67 @@
+name: Submit Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "Job ID from applications.json"
+        required: true
+        type: string
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Write portal accounts file
+        env:
+          PORTAL_ACCOUNTS_JSON: ${{ secrets.PORTAL_ACCOUNTS_JSON }}
+        run: |
+          mkdir -p data
+          echo "$PORTAL_ACCOUNTS_JSON" > data/portal_accounts.json
+
+      - name: Submit application
+        env:
+          GMAIL_CREDENTIALS_JSON: ${{ secrets.GMAIL_CREDENTIALS_JSON }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+          GOOGLE_CREDENTIALS_PATH: credentials.json
+        run: |
+          python -c "
+          import json
+          from src.applicator.submitter import submit_job
+          profile = json.load(open('assets/profile.json'))
+          result = submit_job('${{ inputs.job_id }}', profile)
+          print('Submitted:', result)
+          "
+
+      - name: Update portal accounts secret
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh secret set PORTAL_ACCOUNTS_JSON < data/portal_accounts.json
+
+      - name: Commit updated applications.json
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add dashboard/data/
+          git diff --staged --quiet || git commit -m "chore: update application status after submission"
+          git push
