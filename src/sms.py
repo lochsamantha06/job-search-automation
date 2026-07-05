@@ -1,32 +1,19 @@
-# src/sms.py
-"""
-Send a daily SMS digest via Twilio.
-
-Message format:
-  📋 Job Digest – May 11
-  3 new postings today
-
-  🔴 HIGH (2)
-  • IB Analyst Intern @ Scotiabank – Rolling
-  • Capital Markets Co-op @ RBC – Rolling
-
-  🟡 MEDIUM (1)
-  • Strategy Consulting @ Deloitte – Rolling
-
-  Full list: https://docs.google.com/spreadsheets/d/<SHEET_ID>
-"""
-
 import datetime
+import hashlib
+import hmac
+import os
+
 from twilio.rest import Client
 
 
-def _format_digest(jobs_with_scores: list, spreadsheet_id: str) -> str:
-    """
-    Build the SMS body from a list of (JobPosting, score, priority, reason) tuples.
-    Returns the formatted string (Twilio will truncate at 1600 chars if needed).
-    """
-    today = datetime.date.today().strftime("%b %-d") if hasattr(datetime.date.today(), "strftime") else datetime.date.today().isoformat()
-    # strftime with %-d is Linux-only; use lstrip for cross-platform
+def _daily_token() -> str:
+    """Generate a daily rotating token from DASHBOARD_SECRET + today's date."""
+    secret = os.environ.get("DASHBOARD_SECRET", "changeme")
+    today = datetime.date.today().isoformat()
+    return hmac.new(secret.encode(), today.encode(), hashlib.sha256).hexdigest()[:24]
+
+
+def _format_digest(jobs_with_scores: list, spreadsheet_id: str, dashboard_url: str = "") -> str:
     today = datetime.date.today().strftime("%b %d").lstrip()
 
     high = [(j, s, p, r) for j, s, p, r in jobs_with_scores if p == "High"]
@@ -57,7 +44,12 @@ def _format_digest(jobs_with_scores: list, spreadsheet_id: str) -> str:
             lines.append(f"• {job.title} @ {job.company} – {job.deadline}")
         lines.append("")
 
-    lines.append(f"Full list: https://docs.google.com/spreadsheets/d/{spreadsheet_id}")
+    lines.append(f"📊 Sheets: https://docs.google.com/spreadsheets/d/{spreadsheet_id}")
+
+    if dashboard_url:
+        token = _daily_token()
+        lines.append(f"✅ Review & approve: {dashboard_url}?token={token}")
+
     return "\n".join(lines)
 
 
@@ -68,25 +60,17 @@ def send_digest(
     twilio_auth_token: str,
     twilio_from_number: str,
     to_number: str,
+    dashboard_url: str = "",
 ) -> bool:
-    """
-    Send the daily digest SMS.
-    Returns True on success, False on any error.
-    Skips sending if there are no new jobs.
-    """
     if not jobs_with_scores:
         print("[sms] No new jobs today — skipping SMS.")
         return True
 
-    body = _format_digest(jobs_with_scores, spreadsheet_id)
+    body = _format_digest(jobs_with_scores, spreadsheet_id, dashboard_url)
 
     try:
         client = Client(twilio_account_sid, twilio_auth_token)
-        message = client.messages.create(
-            body=body,
-            from_=twilio_from_number,
-            to=to_number,
-        )
+        message = client.messages.create(body=body, from_=twilio_from_number, to=to_number)
         print(f"[sms] Sent digest. SID: {message.sid}")
         return True
     except Exception as e:
