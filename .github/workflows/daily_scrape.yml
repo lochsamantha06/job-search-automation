@@ -2,14 +2,15 @@ name: Daily Job Scrape
 
 on:
   schedule:
-    # 15:00 UTC = 08:00 PDT (UTC-7) every day
     - cron: "0 15 * * *"
-  workflow_dispatch:  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -24,16 +25,25 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
       - name: Run tests
         run: pytest tests/ -v --tb=short
 
       - name: Write Google credentials file
         env:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-        run: |
-          echo "$GOOGLE_CREDENTIALS_JSON" > credentials.json
+        run: echo "$GOOGLE_CREDENTIALS_JSON" > credentials.json
 
-      - name: Run daily scrape pipeline
+      - name: Write portal accounts file
+        env:
+          PORTAL_ACCOUNTS_JSON: ${{ secrets.PORTAL_ACCOUNTS_JSON }}
+        run: |
+          mkdir -p data
+          echo "$PORTAL_ACCOUNTS_JSON" > data/portal_accounts.json
+
+      - name: Run daily scrape + apply pipeline
         env:
           GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
           GOOGLE_CREDENTIALS_PATH: credentials.json
@@ -43,8 +53,19 @@ jobs:
           TO_PHONE_NUMBER: ${{ secrets.TO_PHONE_NUMBER }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          DASHBOARD_SECRET: ${{ secrets.DASHBOARD_SECRET }}
+          GMAIL_CREDENTIALS_JSON: ${{ secrets.GMAIL_CREDENTIALS_JSON }}
         run: python -m src.main
+
+      - name: Update portal accounts secret
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f data/portal_accounts.json ]; then
+            gh secret set PORTAL_ACCOUNTS_JSON < data/portal_accounts.json
+          fi
 
       - name: Clean up credentials
         if: always()
-        run: rm -f credentials.json
+        run: rm -f credentials.json data/portal_accounts.json
