@@ -59,8 +59,12 @@ jobs:
         run: python -m src.main
 
       - name: Update portal accounts secret
+        # Needs a PAT: the default GITHUB_TOKEN cannot write repo secrets.
+        # Without GH_PAT this step is skipped — newly created portal accounts
+        # from this run are NOT persisted and will be re-created next run.
+        if: ${{ secrets.GH_PAT != '' }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           if [ -f data/portal_accounts.json ]; then
             gh secret set PORTAL_ACCOUNTS_JSON < data/portal_accounts.json
