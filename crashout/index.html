@@ -1,0 +1,519 @@
+<title>Gen Z Crash Out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #e8f0eb;
+    --surface: #ffffff;
+    --ink: #14201a;
+    --muted: #5b6b62;
+    --line: #cfdcd4;
+    --accent: #ff4f79;
+    --accent-ink: #ffffff;
+    --me: #2f5fff;
+    --me-ink: #ffffff;
+    --calm: #1f9d6b;
+    --warm: #e8a317;
+    --hot: #ff4f79;
+    --seg-off: #d6e2da;
+    --display: "Bricolage Grotesque", "Arial Rounded MT Bold", system-ui, sans-serif;
+    --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e1612;
+      --surface: #17221d;
+      --ink: #e6efe9;
+      --muted: #93a59b;
+      --line: #273630;
+      --accent: #ff6f90;
+      --accent-ink: #1a0a10;
+      --me: #4f7dff;
+      --me-ink: #ffffff;
+      --calm: #37c28a;
+      --warm: #f2b638;
+      --hot: #ff6f90;
+      --seg-off: #24322c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e1612;
+    --surface: #17221d;
+    --ink: #e6efe9;
+    --muted: #93a59b;
+    --line: #273630;
+    --accent: #ff6f90;
+    --accent-ink: #1a0a10;
+    --me: #4f7dff;
+    --me-ink: #ffffff;
+    --calm: #37c28a;
+    --warm: #f2b638;
+    --hot: #ff6f90;
+    --seg-off: #24322c;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 var(--body);
+  }
+  .app {
+    height: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  header {
+    padding-block: 14px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px 16px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 span { color: var(--accent); }
+  .tag { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+  .meter { display: grid; gap: 4px; min-width: 190px; }
+  .meter-top {
+    display: flex; justify-content: space-between; gap: 8px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  }
+  .meter-top b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .segs { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+  .seg { height: 8px; border-radius: 2px; background: var(--seg-off); transition: background .3s; }
+  .seg.on.l { background: var(--calm); }
+  .seg.on.m { background: var(--warm); }
+  .seg.on.h { background: var(--hot); }
+
+  .log {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-block: 4px 8px;
+    min-height: 0;
+  }
+  .msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    word-wrap: break-word;
+  }
+  .msg p { margin: 0; }
+  .msg p + p, .msg ul + p, .msg p + ul { margin-top: 8px; }
+  .msg ul { margin: 0; padding-left: 18px; }
+  .bot {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 6px;
+  }
+  .me {
+    align-self: flex-end;
+    background: var(--me);
+    color: var(--me-ink);
+    border-bottom-right-radius: 6px;
+    white-space: pre-wrap;
+  }
+  .mode-label {
+    display: block;
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    opacity: .75; margin-bottom: 2px;
+  }
+  .thinking { color: var(--muted); font-style: italic; }
+  .note { align-self: center; font-size: 13px; color: var(--muted); text-align: center; max-width: 90%; }
+
+  .starters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .starter {
+    font: inherit; font-size: 13px;
+    background: transparent; color: var(--ink);
+    border: 1px dashed var(--line); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer; text-align: left;
+  }
+  .starter:hover { border-color: var(--accent); }
+
+  footer {
+    padding-block: 0 14px;
+    display: grid;
+    gap: 8px;
+  }
+  .modes { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mode {
+    font: 600 13px var(--body);
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .mode[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .composer {
+    display: flex; gap: 8px; align-items: flex-end;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 6px 6px 14px;
+  }
+  .composer:focus-within { border-color: var(--accent); }
+  textarea {
+    flex: 1; min-width: 0;
+    font: inherit; color: var(--ink);
+    background: transparent; border: 0; outline: 0; resize: none;
+    max-height: 160px; padding-block: 7px;
+  }
+  .send {
+    font: 700 14px var(--body);
+    background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 14px;
+    padding: 9px 16px; cursor: pointer;
+  }
+  .send:disabled { opacity: .5; cursor: default; }
+  .tools { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .link {
+    font: inherit; background: none; border: 0; padding: 0; color: var(--muted);
+    text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+  }
+  .link:hover { color: var(--ink); }
+  button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .breathe {
+    position: fixed; inset: 0;
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    display: grid; place-items: center; align-content: center; gap: 28px;
+    padding-inline: 16px; text-align: center; z-index: 10;
+  }
+  .orb {
+    width: 180px; height: 180px; max-width: 60vw; max-height: 60vw;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--calm), color-mix(in srgb, var(--calm) 40%, var(--bg)));
+    transform: scale(.55);
+    transition: transform 4s ease-in-out;
+  }
+  .orb.big { transform: scale(1); }
+  .cue { font-family: var(--display); font-weight: 800; font-size: 28px; margin: 0; }
+  .sub { color: var(--muted); margin: 0; font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) {
+    .orb { transition: none; }
+    .seg { transition: none; }
+  }
+</style>
+
+<div class="app">
+  <header>
+    <div>
+      <h1>gen z <span>crash out</span></h1>
+      <p class="tag">your bestie for when the job hunt and the boss are lowk sending you</p>
+    </div>
+    <div class="meter" aria-live="polite">
+      <div class="meter-top"><span>crash-o-meter</span><b id="meterLabel">chillin · 2/10</b></div>
+      <div class="segs" id="segs"></div>
+    </div>
+  </header>
+
+  <main class="log" id="log" aria-live="polite"></main>
+
+  <footer>
+    <div class="modes" role="group" aria-label="What do you need">
+      <button class="mode" data-mode="auto" aria-pressed="true">just talk</button>
+      <button class="mode" data-mode="rant" aria-pressed="false">let me rant</button>
+      <button class="mode" data-mode="decode" aria-pressed="false">what did my boss mean</button>
+      <button class="mode" data-mode="corporate" aria-pressed="false">make it corporate</button>
+    </div>
+    <form class="composer" id="form">
+      <textarea id="box" rows="1" placeholder="spill it. what happened?" aria-label="Message"></textarea>
+      <button class="send" id="send" type="submit">send</button>
+    </form>
+    <div class="tools">
+      <span>Enter to send · Shift+Enter for a new line</span>
+      <span>
+        <button class="link" id="breatheBtn" type="button">breathe with me</button>
+        &nbsp;·&nbsp;
+        <button class="link" id="clearBtn" type="button">new chat</button>
+      </span>
+    </div>
+  </footer>
+</div>
+
+<div class="breathe" id="breathe" hidden>
+  <div class="orb" id="orb"></div>
+  <p class="cue" id="cue">breathe in</p>
+  <p class="sub">box breathing, 4 seconds each. tap anywhere to stop.</p>
+</div>
+
+<script>
+(() => {
+  const RULES = `You are "Gen Z Crash Out", a chatbot bestie for one person: a university student grinding for finance and consulting internships (Big 5 Canadian banks, Big 4 firms, Vancouver/Toronto/Hong Kong) who also deals with a boss and workplace stuff. She opens you when she is crashing out.
+
+You do three jobs. The user's message may start with a [mode: ...] tag; if it says auto or there is no tag, figure out which job fits.
+
+1. RANT / CALM DOWN (mode: rant). She is venting. First validate her, briefly and for real, in her language. Then help her come down: name what she is feeling, give ONE grounding move (breathe, water, step away from the screen, walk), offer a gentler reframe, and end with one tiny doable next step. Keep it short. Do not lecture or list ten tips. Talk her out of rage-quitting, rage-emailing, or rage-posting; suggest drafting it here instead.
+
+2. DECODE THE BOSS (mode: decode). She pastes or describes something her boss, a recruiter, or a corporate person said. Translate what it ACTUALLY means into Gen Z speak. Rate the vibe (chill / mid / lowkey concerning / red flag) and say why in one line. If a reply is needed, give her a short corporate-ready reply she can copy.
+
+3. MAKE IT CORPORATE (mode: corporate). She gives you a Gen Z / unfiltered sentence. Translate it into polished professional English she can actually send. Give it under the label **Email version**, and a shorter **Slack version**. The corporate text itself must be clean, with zero slang. Your commentary around it stays Gen Z.
+
+Voice: talk like a supportive Gen Z friend. Natural slang (lowkey, fr, no cap, it's giving, bestie, understood the assignment, delulu, touch grass, ate, the ick, main character), but don't overload every sentence or it gets cringe. Warm, funny, on her side, never mean about her. A little emoji is fine, not every line. Short paragraphs. You may use **bold** and "- " bullet lines; no headings, no tables.
+
+Safety: if she says anything about hurting herself, not wanting to be here, or being in danger, drop the jokes and slang. Be warm and direct, tell her she matters, encourage her to reach someone she trusts right now, and give the 988 Suicide Crisis Helpline (call or text 988 in Canada or the US). You are a bestie, not a therapist; if stress sounds ongoing and heavy, gently suggest her school's counselling services.
+
+OUTPUT FORMAT, always: the very first line is exactly "METER: N" where N is 0-10, your read on how crashed out she is right now (0 = totally calm, 10 = full meltdown). Then a blank line, then your reply. Never mention the meter in the reply.`;
+
+  const MODES = {
+    auto: { label: "", ph: "spill it. what happened?" },
+    rant: { label: "rant", ph: "go off. i'm listening, no judgment" },
+    decode: { label: "decode", ph: "paste what your boss said…" },
+    corporate: { label: "make it corporate", ph: "type it how you'd say it to your friends…" },
+  };
+  const STARTERS = [
+    ["rant", "i got ghosted after a final round interview and i'm about to crash out fr"],
+    ["decode", "my boss said \"let's circle back on this offline\""],
+    ["decode", "\"per my last email, please see below\""],
+    ["corporate", "bro i literally cannot do this by friday it's giving impossible"],
+  ];
+  const GREETING = "heyyy bestie 🫶 you're in a safe space. rant at me, paste whatever cryptic thing your boss said and i'll decode it, or give me your unfiltered thoughts and i'll make them sound like a LinkedIn top voice. what's going on?";
+
+  const $ = (id) => document.getElementById(id);
+  const log = $("log"), box = $("box"), send = $("send"), form = $("form");
+  let mode = "auto";
+  let turns = [];        // {role, content, mode?}
+  let meter = 2;
+  let busy = false;
+  let sample = null;
+  let sampleState = "loading"; // loading | ready | off
+
+  const STORE = "crashout.v1";
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ turns, meter })); } catch (e) {} };
+  const load = () => {
+    try {
+      const d = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (d && Array.isArray(d.turns)) { turns = d.turns.slice(-40); meter = Number(d.meter) || 2; }
+    } catch (e) {}
+  };
+
+  // Meter
+  const segs = $("segs");
+  for (let i = 0; i < 10; i++) {
+    const s = document.createElement("div");
+    s.className = "seg " + (i < 3 ? "l" : i < 6 ? "m" : "h");
+    segs.appendChild(s);
+  }
+  function meterWord(n) {
+    if (n <= 2) return "chillin";
+    if (n <= 5) return "lowkey heated";
+    if (n <= 8) return "crashing out";
+    return "full meltdown";
+  }
+  function renderMeter() {
+    [...segs.children].forEach((s, i) => s.classList.toggle("on", i < meter));
+    $("meterLabel").textContent = meterWord(meter) + " · " + meter + "/10";
+  }
+
+  // Minimal, safe markdown: escape first, then **bold** and "- " bullets
+  function esc(s) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function md(text) {
+    const blocks = esc(text.trim()).split(/\n{2,}/);
+    return blocks.map((b) => {
+      const lines = b.split("\n");
+      const fmt = (l) => l.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      if (lines.every((l) => /^\s*[-•*]\s+/.test(l))) {
+        return "<ul>" + lines.map((l) => "<li>" + fmt(l.replace(/^\s*[-•*]\s+/, "")) + "</li>").join("") + "</ul>";
+      }
+      return "<p>" + lines.map(fmt).join("<br>") + "</p>";
+    }).join("");
+  }
+
+  // Pull "METER: N" off the top of a reply
+  function split(raw) {
+    const m = raw.match(/^\s*METER:\s*(\d{1,2})\s*\n?/i);
+    if (m) return { level: Math.max(0, Math.min(10, +m[1])), body: raw.slice(m[0].length) };
+    if (/^\s*M(E(T(E(R(:\s*\d*)?)?)?)?)?$/i.test(raw)) return { level: null, body: "" };
+    return { level: null, body: raw };
+  }
+
+  function bubble(role, text, modeKey) {
+    const el = document.createElement("div");
+    el.className = "msg " + (role === "user" ? "me" : "bot");
+    if (role === "user") {
+      const lbl = MODES[modeKey]?.label;
+      if (lbl) {
+        const s = document.createElement("span");
+        s.className = "mode-label"; s.textContent = lbl;
+        el.appendChild(s);
+      }
+      el.appendChild(document.createTextNode(text));
+    } else {
+      el.innerHTML = md(text);
+    }
+    log.appendChild(el);
+    return el;
+  }
+  function note(text) {
+    const el = document.createElement("div");
+    el.className = "note"; el.textContent = text;
+    log.appendChild(el);
+    return el;
+  }
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+
+  function renderAll() {
+    log.innerHTML = "";
+    bubble("assistant", GREETING);
+    if (!turns.length) {
+      const wrap = document.createElement("div");
+      wrap.className = "starters";
+      STARTERS.forEach(([m, t]) => {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "starter"; b.textContent = t;
+        b.onclick = () => { setMode(m); box.value = t; autosize(); box.focus(); };
+        wrap.appendChild(b);
+      });
+      log.appendChild(wrap);
+    }
+    turns.forEach((t) => bubble(t.role, t.content, t.mode));
+    if (sampleState === "off") note("Chat needs this page open in Claude with permission to use Claude. The breathing tool still works.");
+    renderMeter();
+    scroll();
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll(".mode").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+    box.placeholder = MODES[m].ph;
+  }
+  document.querySelectorAll(".mode").forEach((b) => b.addEventListener("click", () => { setMode(b.dataset.mode); box.focus(); }));
+
+  function autosize() { box.style.height = "auto"; box.style.height = Math.min(box.scrollHeight, 160) + "px"; }
+  box.addEventListener("input", autosize);
+  box.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  const ERR = {
+    not_granted: "No worries, chat is off because Claude access wasn't allowed. Reload the page to be asked again.",
+    sampling_disabled: "Claude isn't available on this account right now.",
+    rate_limited: "Too many messages too fast (or you hit your usage limit). Take a breather and try again in a minute.",
+    session_expired: "You got signed out. Sign back in to Claude and reload.",
+    refused: "I couldn't answer that one. Try saying it a different way.",
+    empty_completion: "I blanked on that. Try again?",
+    prompt_too_large: "That's a lot of text. Try sending a shorter piece.",
+  };
+  const HIDE = new Set(["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"]);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = box.value.trim();
+    if (!text || busy) return;
+    if (!sample) {
+      note(sampleState === "loading" ? "Still connecting to Claude, give it a sec." : "Chat needs this page open in Claude with permission to use Claude.");
+      scroll(); return;
+    }
+    const starters = log.querySelector(".starters");
+    if (starters) starters.remove();
+
+    const m = mode;
+    turns.push({ role: "user", content: text, mode: m });
+    bubble("user", text, m);
+    box.value = ""; autosize();
+    busy = true; send.disabled = true;
+
+    const out = bubble("assistant", "");
+    out.innerHTML = '<p class="thinking">typing…</p>';
+    scroll();
+
+    const history = turns.slice(-20).map((t) => ({
+      role: t.role,
+      content: t.role === "user" ? `[mode: ${t.mode || "auto"}]\n${t.content}` : t.content,
+    }));
+    // The instructions turn must stay first, and the list must start and end on a user turn.
+    while (history.length && history[0].role !== "user") history.shift();
+
+    try {
+      const { text: raw } = await sample([{ role: "user", content: RULES }, ...history], {
+        cache: false,
+        modelTier: "quick",
+        onText: ({ text }) => {
+          const s = split(text);
+          if (s.level !== null) { meter = s.level; renderMeter(); }
+          if (s.body.trim()) { out.innerHTML = md(s.body); scroll(); }
+        },
+      });
+      const s = split(raw);
+      if (s.level !== null) meter = s.level;
+      const reply = s.body.trim() || "i'm here. say more?";
+      out.innerHTML = md(reply);
+      turns.push({ role: "assistant", content: reply });
+      renderMeter();
+      save();
+    } catch (err) {
+      const code = err && err.code;
+      const partial = err && err.text ? split(err.text).body.trim() : "";
+      if (partial && code !== "refused") {
+        out.innerHTML = md(partial);
+        turns.push({ role: "assistant", content: partial });
+      } else {
+        out.remove();
+      }
+      if (code !== "cancelled") note(ERR[code] || "Connection hiccup. Hit send again in a sec.");
+      if (HIDE.has(code)) { sample = null; sampleState = "off"; }
+      save();
+    } finally {
+      busy = false; send.disabled = false; scroll();
+    }
+  });
+
+  $("clearBtn").addEventListener("click", () => {
+    if (busy) return;
+    turns = []; meter = 2; save(); setMode("auto"); renderAll(); box.focus();
+  });
+
+  // Box breathing: in 4, hold 4, out 4, hold 4
+  const breathe = $("breathe"), orb = $("orb"), cue = $("cue");
+  let timer = null;
+  const steps = [["breathe in", true], ["hold", true], ["breathe out", false], ["hold", false]];
+  function stopBreathing() { clearTimeout(timer); timer = null; breathe.hidden = true; orb.classList.remove("big"); }
+  $("breatheBtn").addEventListener("click", () => {
+    breathe.hidden = false;
+    let i = 0;
+    const tick = () => {
+      const [word, big] = steps[i % 4];
+      cue.textContent = word;
+      orb.classList.toggle("big", big);
+      i++;
+      timer = setTimeout(tick, 4000);
+    };
+    requestAnimationFrame(tick);
+  });
+  breathe.addEventListener("click", stopBreathing);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && timer) stopBreathing(); });
+
+  load();
+  renderAll();
+  box.focus();
+
+  (async () => {
+    try { sample = window.claude ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
+    sampleState = sample ? "ready" : "off";
+    if (!sample) renderAll();
+  })();
+})();
+</script>
